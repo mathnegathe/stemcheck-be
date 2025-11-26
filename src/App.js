@@ -15,15 +15,22 @@ const firebaseConfig = {
   appId: "1:785719145136:web:a471359a7588b54bbd0175"
 };
 
-// FIX: Veiligheidscheck voor Canvas-specifieke variabelen. 
-// Dit lost de 'is not defined' errors in de Vercel build op.
-const globalAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const globalAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+// --- GLOBALE VARIABELEN (Vercel Fix) ---
+// We gebruiken direct de veilige check in de logica, 
+// maar declareren de variabelen hier om de compiler tevreden te stellen.
+// NOTE: Vercel mag deze niet als 'const' lokaal zien.
+// We definieren ze veilig binnen de code, maar declareren ze hier.
+
+// We moeten de __app_id en __initial_auth_token variabelen veilig controleren
+// zodat ze niet faalt in de Vercel omgeving.
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = globalAppId; // Gebruik de gecontroleerde lokale variabele
+
+// De Vercel-veilige manier om globale Canvas variabelen te initialiseren:
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
 
 // --- TRANSLATIONS (UI ELEMENTS) ---
 const TRANSLATIONS = {
@@ -191,7 +198,7 @@ const MOCK_VOTES = [
     type: 'Resolutie',
     description: {
       nl: 'Erkenning van de historische hongersnood veroorzaakt door het Sovjetregime als een daad van genocide.',
-      fr: 'Reconnaissance de la famine historique causée par le régime soviétique comme un acte de génocide.',
+      fr: 'Reconnaissance de la famine historique causée par le régime soviétique als een acte de génocide.',
       en: 'Recognition of the historical famine caused by the Soviet regime as an act of genocide.'
     },
     passed: true,
@@ -282,7 +289,8 @@ export default function BelgianVoteTracker() {
       // Check of Firebase al is geïnitialiseerd (om errors bij herladen te voorkomen)
       if (!app) return; 
 
-      const token = globalAuthToken; // Gebruik de gecontroleerde lokale variabele
+      // Gebruik de veilige variabele die boven is gedefinieerd
+      const token = initialAuthToken; 
       
       if (token) {
         try {
