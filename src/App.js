@@ -15,22 +15,22 @@ const firebaseConfig = {
   appId: "1:785719145136:web:a471359a7588b54bbd0175"
 };
 
-// --- GLOBALE VARIABELEN (Vercel Fix) ---
-// We gebruiken direct de veilige check in de logica, 
-// maar declareren de variabelen hier om de compiler tevreden te stellen.
-// NOTE: Vercel mag deze niet als 'const' lokaal zien.
-// We definieren ze veilig binnen de code, maar declareren ze hier.
-
-// We moeten de __app_id en __initial_auth_token variabelen veilig controleren
-// zodat ze niet faalt in de Vercel omgeving.
+// --- GLOBALE VARIABELEN (Vercel Fix - Meest Robuuste Versie) ---
+// Dit omzeilt de Vercel Build linter foutmelding door expliciet window te gebruiken.
+const getGlobalVar = (name, defaultValue) => {
+  if (typeof window !== 'undefined' && typeof window[name] !== 'undefined') {
+    return window[name];
+  }
+  return defaultValue;
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 // De Vercel-veilige manier om globale Canvas variabelen te initialiseren:
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+const appId = getGlobalVar('__app_id', 'default-app-id');
+const initialAuthToken = getGlobalVar('__initial_auth_token', null); 
 
 // --- TRANSLATIONS (UI ELEMENTS) ---
 const TRANSLATIONS = {
@@ -171,7 +171,7 @@ const MOCK_VOTES = [
     id: '101',
     title: {
       nl: 'Wetsontwerp houdende de algemene uitgavenbegroting voor het begrotingsjaar 2024',
-      fr: 'Projet de loi contenant le budget général des dépenses pour l\'année budgétaire 2024',
+      fr: 'Projet de loi contenant le budget général des dépenses voor het begrotingsjaar 2024',
       en: 'Bill containing the general expenditure budget for the budget year 2024'
     },
     date: '2023-12-21',
@@ -675,7 +675,7 @@ export default function BelgianVoteTracker() {
                         <span className="text-slate-400 text-sm">{vote.date}</span>
                         <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">{vote.type}</span>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-800 mb-2">{getLoc(vote.title)}</h3>
+                    <h3 className="lg font-bold text-slate-800 mb-2">{getLoc(vote.title)}</h3>
                     <p className="text-slate-500 text-sm line-clamp-2 mb-4">{getLoc(vote.description)}</p>
                     <VoteBar stats={vote.stats} t={t} />
                 </div>
