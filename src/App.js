@@ -15,10 +15,15 @@ const firebaseConfig = {
   appId: "1:785719145136:web:a471359a7588b54bbd0175"
 };
 
+// FIX: Veiligheidscheck voor Canvas-specifieke variabelen. 
+// Dit lost de 'is not defined' errors in de Vercel build op.
+const globalAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const globalAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const appId = globalAppId; // Gebruik de gecontroleerde lokale variabele
 
 // --- TRANSLATIONS (UI ELEMENTS) ---
 const TRANSLATIONS = {
@@ -277,7 +282,8 @@ export default function BelgianVoteTracker() {
       // Check of Firebase al is geïnitialiseerd (om errors bij herladen te voorkomen)
       if (!app) return; 
 
-      const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+      const token = globalAuthToken; // Gebruik de gecontroleerde lokale variabele
+      
       if (token) {
         try {
             await signInWithCustomToken(auth, token);
